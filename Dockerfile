@@ -1,5 +1,5 @@
 # Dockerfile for dockerize brat application (https://brat.nlplab.org)
-
+# add string
 # base image is ubuntu 
 FROM ubuntu
 
