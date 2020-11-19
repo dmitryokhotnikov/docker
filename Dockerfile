@@ -6,7 +6,7 @@ FROM ubuntu
 # all information from google:)
 MAINTAINER google <www.google.com>
 
-# in spite of -y flag we should choose time zone  
+# in spite of -y flag in install command we should choose time zone  
 ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
@@ -16,8 +16,9 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # apache2 as web-server 
 # python for brat scripts
 # supervisor for monitoring and controlling a number of processes in OS
+# rsync for synhronize files 
 RUN apt-get update \
-    && apt-get install -y curl apache2 python supervisor \
+    && apt-get install -y curl apache2 python supervisor rsync\
     && rm -rf /var/lib/apt/lists/*
 
 # create base directory for brat, download brat's archive and unzip it
@@ -25,21 +26,18 @@ RUN mkdir /var/www/brat
 RUN curl http://weaver.nlplab.org/~brat/releases/brat-v1.3_Crunchy_Frog.tar.gz > /var/www/brat/brat-v1.3_Crunchy_Frog.tar.gz 
 RUN cd /var/www/brat && tar -xvzf brat-v1.3_Crunchy_Frog.tar.gz
 
+# create a symlink directories for comfort mount volumes(short names)
+RUN mkdir /bratdata && mkdir /bratcfg
+# change directories owner to www-data and acess mode
+RUN chown -R www-data:www-data /bratdata /bratcfg 
+RUN chmod o-rwx /bratdata /bratcfg
+# create a symlink directories 
+RUN ln -s /bratdata /var/www/brat/brat-v1.3_Crunchy_Frog/data
+RUN ln -s /bratcfg /var/www/brat/brat-v1.3_Crunchy_Frog/cfg 
 
-# create folders for link with host 
-RUN mkdir /var/www/brat/brat-v1.3_Crunchy_Frog/data
-RUN mkdir /var/www/brat/brat-v1.3_Crunchy_Frog/config
-RUN cd /var/www/brat/brat-v1.3_Crunchy_Frog && chgrp -R www-data data config
-RUN cd /var/www/brat/brat-v1.3_Crunchy_Frog && chmod g+rwx data config
-
-
-# create a symlink directories for comfort mount (short names)
-#RUN mkdir /bratdata && mkdir /bratconfig
-# change directories owner to www-data
-#RUN chown -R www-data:www-data /bratdata /bratconfig 
-# create links between directories
-#RUN ln -s /bratdata /var/www/brat/brat-v1.3_Crunchy_Frog/data
-#RUN ln -s /bratconfig /var/www/brat/brat-v1.3_Crunchy_Frog/config
+# make that location a volume
+VOLUME /bratdata
+VOLUME /bratcfg
 
 # add install_wrapper file and allow him to be execute
 # wrapper run execute install.sh file with neceserry
@@ -63,4 +61,3 @@ EXPOSE 80
 RUN mkdir -p /var/log/supervisor
 ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf 
 CMD ["/usr/bin/supervisord"]
-
