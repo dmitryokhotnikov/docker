@@ -5,7 +5,5 @@ $BRAT_USERNAME
 $BRAT_PASSWORD 
 $BRAT_EMAIL
 EOD
-
 chown -R www-data:www-data /bratdata
-
 exit 0

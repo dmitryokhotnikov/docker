@@ -3,9 +3,6 @@
 # base image is ubuntu 
 FROM ubuntu
 
-# all information from google:)
-MAINTAINER google <www.google.com>
-
 # in spite of -y flag in install command we should choose time zone  
 ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
